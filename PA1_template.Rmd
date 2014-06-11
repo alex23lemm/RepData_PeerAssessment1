@@ -66,6 +66,16 @@ ggplot(activity_by_day_df, aes(date, total_steps)) +
 ```
 
    
+```{r}
+
+print(paste0('The mean total number of steps taken per day is: ',
+             round(mean(activity_by_day_df$total_steps, na.rm = TRUE)),
+             digits = 2))
+
+paste0('The median total number of steps taken per day are: ',
+       median(activity_by_day_df$total_steps, na.rm = TRUE))
+
+```
 
 The mean total number of steps taken per day are: `r mean(activity_by_day_df$total_steps, na.rm = TRUE)`
 
