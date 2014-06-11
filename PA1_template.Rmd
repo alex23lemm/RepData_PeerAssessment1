@@ -16,14 +16,6 @@ activity_df <- mutate(activity_df,
                       date = as.Date(date)
                       )
 
-sum(complete.cases(activity_df))
-head(activity_df)
-str(activity_df)
-tail(activity_df)
-
-
-
-
 ```
 
 
@@ -44,32 +36,22 @@ activity_by_day_df <- group_by(activity_df, date) %>%
     total_steps = sum(steps, na.rm = TRUE)
     )
 
-# Plot histogram
-ggplot(activity_by_day_df, aes(date, total_steps)) +
-  geom_bar(stat = 'identity') +
-  xlab('Day of month') +
-  ylab('Number of steps') +
-  ggtitle('Total number of steps taken each day by individual') +
-  theme_bw() + 
-  theme(plot.title = element_text(size = rel(1.2)),
-        axis.title = element_text(size = 12),
-        axis.text = element_text(size = 9),
-        axis.text.x = element_text(angle = 90, hjust = 1,
-                                   vjust = 1)) +
-  scale_x_date(
-    breaks = '1 day',
-    limits = c(as.Date('2012-10-01'), as.Date('2012-11-30')),
-    labels = date_format('%d-%b'),
-    expand = c(0,0.6)
-    )
-  
+#plot histogram
+ggplot(activity_by_day_df, aes(total_steps)) + 
+  geom_histogram(fill = 'steelblue', binwidth = 500) +
+  xlab('Histogram of total steps by day') +
+  ylab('Frequency') +
+  ggtitle('Total number of steps taken each day') +
+  theme_bw() +
+  theme(plot.title = element_text(size = rel(1.2))
+        )
 ```
 
    
 ```{r}
 
-print(paste0('The mean total number of steps taken per day is: ',
-             round(mean(activity_by_day_df$total_steps, na.rm = TRUE)),
+paste0('The mean total number of steps taken per day is: ',
+             round(mean(activity_by_day_df$total_steps, na.rm = TRUE),
              digits = 2))
 
 paste0('The median total number of steps taken per day are: ',
@@ -77,18 +59,12 @@ paste0('The median total number of steps taken per day are: ',
 
 ```
 
-The mean total number of steps taken per day are: `r mean(activity_by_day_df$total_steps, na.rm = TRUE)`
-
-The median total number of steps taken per day are: `r median(activity_by_day_df$total_steps, na.rm = TRUE)`
-
-
-
-
-
-
-
 
 ## What is the average daily activity pattern?
+
+Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+Which 5-minute interval, on average across all the days in the dataset, contains the maximum 
 
 
 
