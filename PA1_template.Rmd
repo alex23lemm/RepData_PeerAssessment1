@@ -3,9 +3,78 @@
 
 ## Loading and preprocessing the data
 
+```{r echo=TRUE, message=FALSE}
+
+library(dplyr)
+library(ggplot2)
+library(scales)
+
+activity_df <- read.csv('activity.csv')
+
+# Transform date column from factor into Date format
+activity_df <- mutate(activity_df,
+                      date = as.Date(date)
+                      )
+
+sum(complete.cases(activity_df))
+head(activity_df)
+str(activity_df)
+tail(activity_df)
+
+
+
+
+```
+
+
 
 
 ## What is mean total number of steps taken per day?
+
+For this part of the assignment, we ignore the missing values in the dataset.
+
+The histogram below shows the total number of steps taken each day. 
+
+```{r activityHistogram}
+
+
+# Summarize steps taken by date
+activity_by_day_df <- group_by(activity_df, date) %>%
+  summarize(
+    total_steps = sum(steps, na.rm = TRUE)
+    )
+
+# Plot histogram
+ggplot(activity_by_day_df, aes(date, total_steps)) +
+  geom_bar(stat = 'identity') +
+  xlab('Day of month') +
+  ylab('Number of steps') +
+  ggtitle('Total number of steps taken each day by individual') +
+  theme_bw() + 
+  theme(plot.title = element_text(size = rel(1.2)),
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 9),
+        axis.text.x = element_text(angle = 90, hjust = 1,
+                                   vjust = 1)) +
+  scale_x_date(
+    breaks = '1 day',
+    limits = c(as.Date('2012-10-01'), as.Date('2012-11-30')),
+    labels = date_format('%d-%b'),
+    expand = c(0,0.6)
+    )
+  
+```
+
+   
+
+The mean total number of steps taken per day are: `r mean(activity_by_day_df$total_steps, na.rm = TRUE)`
+
+The median total number of steps taken per day are: `r median(activity_by_day_df$total_steps, na.rm = TRUE)`
+
+
+
+
+
 
 
 
