@@ -1,13 +1,20 @@
 # Reproducible Research: Peer Assessment 1
 
+```{r setup,}
+knitr::opts_chunk$set(fig.path = "figures/")
+```
 
 ## Loading and preprocessing the data
 
 ```{r echo=TRUE, message=FALSE}
 
+# Load libraries ---------------------------------------------------------------
+
 library(dplyr)
 library(ggplot2)
 library(scales)
+
+# Load data --------------------------------------------------------------------
 
 activity_df <- read.csv('activity.csv')
 
@@ -15,10 +22,7 @@ activity_df <- read.csv('activity.csv')
 activity_df <- mutate(activity_df,
                       date = as.Date(date)
                       )
-
 ```
-
-
 
 
 ## What is mean total number of steps taken per day?
@@ -27,10 +31,11 @@ For this part of the assignment, we ignore the missing values in the dataset.
 
 The histogram below shows the total number of steps taken each day. 
 
-```{r activityHistogram}
-
+```{r totalDailyActivityHistogram}
 
 # Summarize steps taken by date
+# (1) Group activities by date
+# (2) Calculate total number of steps for each subgroup
 activity_by_day_df <- group_by(activity_df, date) %>%
   summarize(
     total_steps = sum(steps, na.rm = TRUE)
@@ -62,9 +67,58 @@ paste0('The median total number of steps taken per day are: ',
 
 ## What is the average daily activity pattern?
 
-Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-Which 5-minute interval, on average across all the days in the dataset, contains the maximum 
+The time series plot below shows the the average number of steps taken by an individual, averaged accross all days. 
+
+In the original data the interval column is a numeric variable which represents the hour and minute of a day (110 corresponds to 01:10). 
+
+This information could not be used directly for the x-axis variable plotting without any further pre-processing because it would have shown inappropriate distances between the sorted intervals. For instance, after 55 follows 100 in the sorted data where 55 represents 00:55 and 100 represents 01:00. Plotting this information on a continuous scale would mean an unnecessary big distance between 55 and 100 although the distance should be same as between 50 and 55 namely 5.
+
+Therefore we introduce a new variable in the pre-processing steps below which represents the mintues after the starting time 00:00 for each interval. This variable is used as the x-axis variable ensuring that the time series is not skewed and that the distance between subsequent variables is always 5.
+
+
+```{r averageIntervalActivityTimeSeries}
+
+# (1) Group activties by interval
+# (2) Calculate average number of steps for each subgroup
+# (3) Convert interval column from numeric to character to represent information
+#     in desired time format (hour/minute: 01:45)
+# (4) Add new column representing minutes from starting time 00:00 for each 
+#     interval
+activity_by_interval <- group_by(activity_df, interval) %>%
+  summarize(
+    average_steps = mean(steps, na.rm = TRUE)
+    ) %>%
+  mutate(
+    interval = sprintf("%04d", interval),
+    interval = paste0(substr(interval, 1, 2), ':', substring(interval, 3, 4)),
+    minutes_from_starting_point = seq(0, length.out = length(interval), by = 5)
+    )
+
+ggplot(activity_by_interval, aes(minutes_from_starting_point, average_steps)) + 
+  geom_line(color = 'steelblue') + 
+  xlab('Hour of the day') +
+  ylab('Average number of steps') +
+  ggtitle('Average daily activity pattern of individual') +
+  scale_x_continuous(
+     breaks = activity_by_interval$minutes_from_starting_point[seq(1, 288, by = 24)],
+     labels = activity_by_interval$interval[seq(1, 288, by = 24)]
+    ) +
+  theme_bw()
+
+
+```
+
+
+At the following starting hour of the correspondent 5-minute interval, the indivdual takes the maximum average steps accorss all the days in the dataset:
+
+```{r}
+
+filter(activity_by_interval, average_steps == max(average_steps)) %>%
+  select(interval, average_steps)
+
+```
+
 
 
 
