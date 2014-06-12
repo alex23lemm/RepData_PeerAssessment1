@@ -90,8 +90,9 @@ activity_by_interval <- group_by(activity_df, interval) %>%
     average_steps = mean(steps, na.rm = TRUE)
     ) %>%
   mutate(
-    interval = sprintf("%04d", interval),
-    interval = paste0(substr(interval, 1, 2), ':', substring(interval, 3, 4)),
+    hour_of_the_day = sprintf("%04d", interval),
+    hour_of_the_day = paste0(substr(hour_of_the_day, 1, 2), ':', 
+                             substring(hour_of_the_day, 3, 4)),
     minutes_from_starting_point = seq(0, length.out = length(interval), by = 5)
     )
 
@@ -102,7 +103,7 @@ ggplot(activity_by_interval, aes(minutes_from_starting_point, average_steps)) +
   ggtitle('Average daily activity pattern of individual') +
   scale_x_continuous(
      breaks = activity_by_interval$minutes_from_starting_point[seq(1, 288, by = 24)],
-     labels = activity_by_interval$interval[seq(1, 288, by = 24)]
+     labels = activity_by_interval$hour_of_the_day[seq(1, 288, by = 24)]
     ) +
   theme_bw()
 
@@ -121,8 +122,37 @@ filter(activity_by_interval, average_steps == max(average_steps)) %>%
 
 
 
-
 ## Imputing missing values
+
+Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+The total number of missing values in the dataset (i.e. the total number of rows with NAs) is the following:
+    
+    
+```{r}
+
+paste0('Total number of missing values: ',
+       nrow(activity_df) - sum(complete.cases(activity_df))) 
+
+```
+
+
+    
+For the `r sum(is.na(activity_df$steps` observations with missing values in the steps column we will impute the average number of steps calculated for the respective 5 -minute interval.  
+
+We create a new dataset that is equal to the original dataset but with the missing data filled in as follows:
+
+```{r}
+
+
+
+```
+
+ 
+
+
+    Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
 
 
 
