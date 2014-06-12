@@ -116,15 +116,13 @@ At the following starting hour of the correspondent 5-minute interval, the indiv
 ```{r}
 
 filter(activity_by_interval, average_steps == max(average_steps)) %>%
-  select(interval, average_steps)
+  select(interval, hour_of_the_day, average_steps)
 
 ```
 
 
 
 ## Imputing missing values
-
-Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
 The total number of missing values in the dataset (i.e. the total number of rows with NAs) is the following:
     
@@ -137,22 +135,68 @@ paste0('Total number of missing values: ',
 ```
 
 
-    
-For the `r sum(is.na(activity_df$steps` observations with missing values in the steps column we will impute the average number of steps calculated for the respective 5 -minute interval.  
+For the `r sum(is.na(activity_df$steps))` observations with missing values in the steps column we will impute the average number of steps calculated for the respective 5-minute interval.  
 
-We create a new dataset that is equal to the original dataset but with the missing data filled in as follows:
+We create a new dataset `complete_activity_df` that is equal to the original dataset but with the missing data filled in as follows:
 
 ```{r}
 
+# Create new data frame based on the original data and the previously calculated
+# average-steps-per-interval data frame. The new data frame corresponds to the
+# original one but with an extra column showing the average number of steps for
+# the respetive oberservation's interval 
+complete_activity_df <- left_join(activity_df, 
+                              select(activity_by_interval, interval, 
+                                     average_steps), 
+                              by = 'interval')
 
+# Impute missing values with the average value of the respective 5-minute 
+# interval
+complete_activity_df$steps[is.na(complete_activity_df$steps)] <- 
+  complete_activity_df$average_steps[is.na(complete_activity_df$steps)]
 
 ```
 
- 
+
+The histogram below shows the total number of steps taken each day for the modified dataset which includes the imputed values.  
+
+```{r totalDailyCompleteActivityHistogram}
+
+# Summarize steps taken by date
+# (1) Group activities by date
+# (2) Calculate total number of steps for each subgroup
+comp_activity_by_day_df <- group_by(complete_activity_df, date) %>%
+  summarize(
+    total_steps = sum(steps)
+    )
+
+#plot histogram
+ggplot(comp_activity_by_day_df, aes(total_steps)) + 
+  geom_histogram(fill = 'steelblue', binwidth = 500) +
+  xlab('Histogram of total steps by day') +
+  ylab('Frequency') +
+  ggtitle('Total number of steps taken each day (Including imputed values)') +
+  theme_bw() +
+  theme(plot.title = element_text(size = rel(1.2))
+        )
+```
 
 
-    Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+Below you will find the mean and the median total number of steps taken per day for the data which includes the imputed values:
 
+```{r}
+
+paste0('The mean total number of steps taken per day is: ',
+             round(mean(comp_activity_by_day_df$total_steps),
+             digits = 2))
+
+paste0('The median total number of steps taken per day is: ',
+       round(median(comp_activity_by_day_df$total_steps),
+             digits = 2))
+
+```
+
+Both the mean and the median are higher after using the imputed values in our calculation in comparison to the original data above. This makes sense because missing values were omitted in the calculations before.
 
 
 
