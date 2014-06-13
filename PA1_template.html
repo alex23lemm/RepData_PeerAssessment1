@@ -402,7 +402,7 @@ complete_activity_df$wday[complete_activity_df$wday != &#39;weekend&#39;] &lt;- 
 complete_activity_df$wday &lt;- as.factor(complete_activity_df$wday)
 </code></pre>
 
-<p>The facetted time series plot below shows the average steps taken for each 5 minute-interval of the day averaged across all weekday/weekend days. The x-axis shows the hour of the day instead of the number of 5 minutes interval to make the plot more understandable for a human reader. </p>
+<p>The facetted time series plot below shows the average steps taken for each 5 minute-interval of the day averaged across all weekday/weekend days. The x-axis shows the time of the day instead of the numbers of the 5 minutes intervals to make the plot more understandable for a human reader (The same transformation as for the time series plot of question 2 was used here). </p>
 
 <pre><code class="r"># (1) Group activties by weekday and interval
 # (2) Calculate average number of steps for each subgroup

@@ -226,7 +226,7 @@ complete_activity_df$wday <- as.factor(complete_activity_df$wday)
 
 ```
 
-The facetted time series plot below shows the average steps taken for each 5 minute-interval of the day averaged across all weekday/weekend days. The x-axis shows the hour of the day instead of the number of 5 minutes interval to make the plot more understandable for a human reader. 
+The facetted time series plot below shows the average steps taken for each 5 minute-interval of the day averaged across all weekday/weekend days. The x-axis shows the time of the day instead of the numbers of the 5 minutes intervals to make the plot more understandable for a human reader (The same transformation as for the time series plot of question 2 was used here). 
 
 ```{r averageIntervalActivityTimeSeriesByWday, fig.width=10}
 
