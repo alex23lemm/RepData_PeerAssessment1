@@ -13,10 +13,13 @@ knitr::opts_chunk$set(fig.path = "figures/")
 library(dplyr)
 library(ggplot2)
 library(scales)
+library(lubridate)
 
 # Load data --------------------------------------------------------------------
 
 activity_df <- read.csv('activity.csv')
+
+# Pre-processing ---------------------------------------------------------------
 
 # Transform date column from factor into Date format
 activity_df <- mutate(activity_df,
@@ -98,7 +101,7 @@ activity_by_interval <- group_by(activity_df, interval) %>%
 
 ggplot(activity_by_interval, aes(minutes_from_starting_point, average_steps)) + 
   geom_line(color = 'steelblue') + 
-  xlab('Hour of the day') +
+  xlab('Time of the day') +
   ylab('Average number of steps') +
   ggtitle('Average daily activity pattern of individual') +
   scale_x_continuous(
@@ -154,6 +157,8 @@ complete_activity_df <- left_join(activity_df,
 # interval
 complete_activity_df$steps[is.na(complete_activity_df$steps)] <- 
   complete_activity_df$average_steps[is.na(complete_activity_df$steps)]
+# Drop average_steps column
+complete_activity_df$average_steps <- NULL
 
 ```
 
@@ -196,8 +201,67 @@ paste0('The median total number of steps taken per day is: ',
 
 ```
 
-Both the mean and the median are higher after using the imputed values in our calculation in comparison to the original data above. This makes sense because missing values were omitted in the calculations before.
+Both the mean and the median are higher after using the imputed values in our calculation in comparison to the original data above.
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+
+For this part of the assignement we will use the data set `complete_activity_df` which includes the imputed missing values. 
+
+We will create a new factor variable `wday` in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+    
+        
+```{r}
+
+# (1) Add new column to data frame which contains the days of the week encoded as
+#     decimal numbers (01-07, Sunday is 1)
+# (2) Transform numeric values of the wday to either 'weekend' or 'weekday'
+# (3) Convert character vector to factor
+complete_activity_df$wday <- wday(complete_activity_df$date)
+complete_activity_df$wday[complete_activity_df$wday %in% c(7, 1)] <- 'weekend'
+complete_activity_df$wday[complete_activity_df$wday != 'weekend'] <- 'weekday'
+complete_activity_df$wday <- as.factor(complete_activity_df$wday)
+
+```
+
+The facetted time series plot below shows the average steps taken for each 5 minute-interval of the day averaged across all weekday/weekend days. The x-axis shows the hour of the day instead of the number of 5 minutes interval to make the plot more understandable for a human reader. 
+
+```{r averageIntervalActivityTimeSeriesByWday, fig.width=10}
+
+# (1) Group activties by weekday and interval
+# (2) Calculate average number of steps for each subgroup
+# (3) Convert interval column from numeric to character to represent information
+#     in desired time format (hour/minute: 01:45)
+# (4) Add new column representing minutes from starting time 00:00 for each 
+#     interval
+comp_activity_by_interval_df <- group_by(complete_activity_df, wday, interval) %>%
+  summarize(
+    average_steps = mean(steps)
+    )  %>%
+  mutate(
+    hour_of_the_day = sprintf("%04d", interval),
+    hour_of_the_day = paste0(substr(hour_of_the_day, 1, 2), ':', 
+                             substr(hour_of_the_day, 3, 4)),
+    minutes_from_starting_point = seq(0, length.out = length(interval), by = 5)
+    )
+
+ggplot(comp_activity_by_interval_df, aes(minutes_from_starting_point, 
+                                         average_steps)) +
+  geom_line(color = 'steelblue') +
+  facet_wrap(~ wday) +
+  xlab('Time of the day') +
+  ylab('Average number of steps') +
+  ggtitle('Average daily activity pattern of indidual spitted by all weekday/weekend days') +
+  theme_bw() +
+  theme(
+    axis.text.x=element_text(size = 8) 
+    ) + 
+  scale_x_continuous(
+    breaks = comp_activity_by_interval_df$minutes_from_starting_point[seq(1, 288, by = 24)],
+    labels = comp_activity_by_interval_df$hour_of_the_day[seq(1, 288, by = 24)]
+    )
+
+```
+
